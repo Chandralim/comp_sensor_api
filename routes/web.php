@@ -27,7 +27,7 @@ Route::post('/admin/refresh', 'AdminAccount@refresh');
 // Route::post('/air_limbah_flowmeter', 'IOT\AirLimbahFlowMeterController@store');
 // Route::post('/air_limbah_direct_inject', 'IOT\AirLimbahFlowMeterController@directInjectData');
 
-Route::get('/send_sensor_data', 'IOT\SensorDataRawController@store');
+Route::post('/send_sensor_data', 'IOT\SensorDataRawController@store');
 
 // Route::prefix("/")->group(function () {
 Route::middleware('auth:internal')->group(function () {
