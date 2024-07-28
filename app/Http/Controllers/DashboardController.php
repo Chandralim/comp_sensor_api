@@ -15,6 +15,7 @@ use App\Exports\MyReport;
 use Excel;
 use DB;
 use \App\Helpers\EzLog;
+use App\Helpers\MyLog;
 use App\Model\SensorDataDay;
 use App\Model\SensorDataHour;
 use App\Model\SensorDataMonth;
@@ -215,154 +216,162 @@ class DashboardController extends Controller
 
   public function detailPeriodDataDownload(Request $request)
   {
+    try {
+      $this->admin = MyLib::admin();
 
-    $this->admin = MyLib::admin();
-
-    $rules = [
-      '_TimeZoneOffset' => "required|numeric",
-      'periodic' => "required|date_format:Y-m",
-      'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
-    ];
-
-    $messages = [
-      'periodic.required' => 'Periodic is required',
-      'periodic.date_format' => 'Please Select Periodic',
-    ];
-
-    $validator = \Validator::make($request->all(), $rules, $messages);
-
-    if ($validator->fails()) {
-      throw new ValidationException($validator);
-    }
-
-    $tz = $request->_TimeZoneOffset;
-
-    $date_from = new \DateTime($request->periodic . "-01");
-
-    $date_to = clone ($date_from);
-    $date_to->add(new \DateInterval('P1M'));
-    $date_to = $date_to->format('Y-m-d');
-    $date_from = $date_from->format('Y-m-d');
-
-
-    $date_from = $date_from . " 00:00:00";
-    $date_to = $date_to . " 00:00:00";
-
-    $utc_date_from = MyLib::local_to_utc($tz, $date_from);
-    $utc_date_to = MyLib::local_to_utc($tz, $date_to);
-
-    $sensor_token_id = $request->sensor_token_id;
-
-    $data = SensorToken::with(['sensor_lists' => function ($q) use ($utc_date_from, $utc_date_to) {
-      $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to) {
-        $q2->where('created_at', ">=", $utc_date_from)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
-      }]);
-    }])->find($sensor_token_id);
-
-    $info = [
-      "name" => $data->name,
-    ];
-
-    $myData = [];
-
-    $dDate = $date_from;
-    while ($dDate != $date_to) {
-      $md = [
-        "utc_from" => MyLib::local_to_utc($tz, $dDate),
-        "date_from" => $dDate,
+      $rules = [
+        '_TimeZoneOffset' => "required|numeric",
+        'periodic' => "required|date_format:Y-m",
+        'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
       ];
 
-      $dDate = new \DateTime($dDate);
-      $dDate->add(new \DateInterval('P1D'));
-      $dDate = $dDate->format("Y-m-d H:i:s");
+      $messages = [
+        'periodic.required' => 'Periodic is required',
+        'periodic.date_format' => 'Please Select Periodic',
+      ];
 
-      $md["utc_to"] = MyLib::local_to_utc($tz, $dDate);
-      array_push($myData, $md);
-    }
+      $validator = \Validator::make($request->all(), $rules, $messages);
 
-    $sensor_lists = $data->sensor_lists->toArray();
-    foreach ($sensor_lists as $k => $v) {
-
-      $sensor_lists[$k]["sensor_postVal"] = [];
-
-      foreach ($myData as $k1 => $v1) {
-
-        $af = array_values(array_filter($v['sensor_datas'], function ($x) use ($v1) {
-          return $x['created_at'] >= $v1['utc_from'] && $x['created_at'] < $v1['utc_to'];
-        }));
-
-        $result = 0;
-        if (count($af) == 0) {
-        } elseif (count($af) == 1 && $v['type'] == 'inc') {
-        } elseif (count($af) == 1 && $v['type'] == 'ran') {
-        } elseif ($v['type'] == 'inc') {
-          $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
-        } elseif ($v['type'] == 'ran') {
-          $result = array_reduce($af, function ($carry, $item) {
-            $carry += $item['value'];
-            return $carry;
-          }) / count($af);
-        }
-
-        array_push($sensor_lists[$k]["sensor_postVal"], $result);
+      if ($validator->fails()) {
+        throw new ValidationException($validator);
       }
+
+      $tz = $request->_TimeZoneOffset;
+
+      $date_from = new \DateTime($request->periodic . "-01");
+
+      $date_to = clone ($date_from);
+      $date_to->add(new \DateInterval('P1M'));
+      $date_to = $date_to->format('Y-m-d');
+      $date_from = $date_from->format('Y-m-d');
+
+
+      $date_from = $date_from . " 00:00:00";
+      $date_to = $date_to . " 00:00:00";
+
+      $utc_date_from = MyLib::local_to_utc($tz, $date_from);
+      $utc_date_to = MyLib::local_to_utc($tz, $date_to);
+
+      $sensor_token_id = $request->sensor_token_id;
+
+      $data = SensorToken::with(['sensor_lists' => function ($q) use ($utc_date_from, $utc_date_to) {
+        $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to) {
+          $q2->where('created_at', ">=", $utc_date_from)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
+        }]);
+      }])->find($sensor_token_id);
+
+      $info = [
+        "name" => $data->name,
+      ];
+
+      $myData = [];
+
+      $dDate = $date_from;
+      while ($dDate != $date_to) {
+        $md = [
+          "utc_from" => MyLib::local_to_utc($tz, $dDate),
+          "date_from" => $dDate,
+        ];
+
+        $dDate = new \DateTime($dDate);
+        $dDate->add(new \DateInterval('P1D'));
+        $dDate = $dDate->format("Y-m-d H:i:s");
+
+        $md["utc_to"] = MyLib::local_to_utc($tz, $dDate);
+        array_push($myData, $md);
+      }
+
+      $sensor_lists = $data->sensor_lists->toArray();
+      foreach ($sensor_lists as $k => $v) {
+
+        $sensor_lists[$k]["sensor_postVal"] = [];
+
+        foreach ($myData as $k1 => $v1) {
+
+          $af = array_values(array_filter($v['sensor_datas'], function ($x) use ($v1) {
+            return $x['created_at'] >= $v1['utc_from'] && $x['created_at'] < $v1['utc_to'];
+          }));
+
+          $result = 0;
+          if (count($af) == 0) {
+          } elseif (count($af) == 1 && $v['type'] == 'inc') {
+          } elseif (count($af) == 1 && $v['type'] == 'ran') {
+          } elseif ($v['type'] == 'inc') {
+            $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
+          } elseif ($v['type'] == 'ran') {
+            $result = array_reduce($af, function ($carry, $item) {
+              $carry += $item['value'];
+              return $carry;
+            }) / count($af);
+          }
+
+          array_push($sensor_lists[$k]["sensor_postVal"], $result);
+        }
+      }
+
+
+
+
+      // $last_date = clone ($date_from);
+      // $last_date->modify('last day of this month');
+
+      // for ($i=1; $i < (int)$last_date->format("d") ; $i++) { 
+      //   array_push($myData,[
+      //     "date" => $date_from,
+      //   ]);
+      // }
+
+
+      // $date_to->modify('last day of this month');
+
+      // $data
+
+      // foreach ($data->sensor_lists as $key => $value) {
+      //   # code...
+      // }
+
+
+
+      // return response()->json(["data" => $data, "myData" => $myData, "sensor_lists" => $sensor_lists], 200);
+
+
+      // $ori = json_decode(json_encode($this->detailHistoryAirLimbah($request, true)), true)["original"];
+      // $data = $ori["data"];
+      // $additional = $ori["additional"];
+
+      $date = new \DateTime();
+      // $filename = $date->format("YmdHis") . "-" . $additional["company_name"] . "[" . $additional["date_from"] . "-" . $additional["date_to"] . "]";
+      $filename = $date->format("YmdHis") . "-" . $info["name"] . "[" . $request->periodic . "]";
+      // $filename=$date->format("YmdHis");
+
+      // return response()->json(["message"=>$filename],200);
+
+      // $mime = MyLib::mime("csv");
+      $mime = MyLib::mime("xls");
+
+      //     Excel::loadView('folder.file', $data)
+      // ->setTitle('FileName')
+      // ->sheet('SheetName')
+      // ->mergeCells('A2:B2')
+      // ->export('xls');
+
+      $bs64 = base64_encode(Excel::raw(new MyReport(["myData" => $myData, "sensor_lists" => $sensor_lists, "info" => $info], 'report.sensor_data'), $mime["exportType"]));
+
+      $result = [
+        "contentType" => $mime["contentType"],
+        "data" => $bs64,
+        "dataBase64" => $mime["dataBase64"] . $bs64,
+        "filename" => $filename . "." . $mime["ext"]
+      ];
+      return $result;
+    } catch (\Exception $e) {
+      return response()->json([
+        "getCode" => $e->getCode(),
+        "line" => $e->getLine(),
+        "message" => $e->getMessage(),
+      ], 400);
     }
 
-
-
-
-    // $last_date = clone ($date_from);
-    // $last_date->modify('last day of this month');
-
-    // for ($i=1; $i < (int)$last_date->format("d") ; $i++) { 
-    //   array_push($myData,[
-    //     "date" => $date_from,
-    //   ]);
-    // }
-
-
-    // $date_to->modify('last day of this month');
-
-    // $data
-
-    // foreach ($data->sensor_lists as $key => $value) {
-    //   # code...
-    // }
-
-
-
-    // return response()->json(["data" => $data, "myData" => $myData, "sensor_lists" => $sensor_lists], 200);
-
-
-    // $ori = json_decode(json_encode($this->detailHistoryAirLimbah($request, true)), true)["original"];
-    // $data = $ori["data"];
-    // $additional = $ori["additional"];
-
-    $date = new \DateTime();
-    // $filename = $date->format("YmdHis") . "-" . $additional["company_name"] . "[" . $additional["date_from"] . "-" . $additional["date_to"] . "]";
-    $filename = $date->format("YmdHis") . "-" . $info["name"] . "[" . $request->periodic . "]";
-    // $filename=$date->format("YmdHis");
-
-    // return response()->json(["message"=>$filename],200);
-
-    // $mime = MyLib::mime("csv");
-    $mime = MyLib::mime("xls");
-
-    //     Excel::loadView('folder.file', $data)
-    // ->setTitle('FileName')
-    // ->sheet('SheetName')
-    // ->mergeCells('A2:B2')
-    // ->export('xls');
-
-    $bs64 = base64_encode(Excel::raw(new MyReport(["myData" => $myData, "sensor_lists" => $sensor_lists, "info" => $info], 'report.sensor_data'), $mime["exportType"]));
-
-    $result = [
-      "contentType" => $mime["contentType"],
-      "data" => $bs64,
-      "dataBase64" => $mime["dataBase64"] . $bs64,
-      "filename" => $filename . "." . $mime["ext"]
-    ];
-    return $result;
     // return response()->json(["data"=>$result],200);
     // return $data;
   }
