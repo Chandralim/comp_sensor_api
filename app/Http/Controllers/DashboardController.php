@@ -366,9 +366,10 @@ class DashboardController extends Controller
       return $result;
     } catch (\Exception $e) {
       return response()->json([
-        "getCode" => $e->getCode(),
-        "line" => $e->getLine(),
-        "message" => $e->getMessage(),
+        // "getCode" => $e->getCode(),
+        // "line" => $e->getLine(),
+        // "message" => $e->getMessage(),
+        "message" => "error",
       ], 400);
     }
 
