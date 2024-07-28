@@ -13,12 +13,12 @@ class SensorToken extends Model
 
     public $timestamps = false;
 
-    // protected $fillable = [
-    //     'id', 'token', 'name',
-    // ];
+    protected $hidden = [
+        'token', 'admin_id', 'coor_lat', 'coor_long'
+    ];
 
-    public function lists()
+    public function sensor_lists()
     {
-        return $this->hasMany(SensorList::class, 'id', "location_id");
+        return $this->hasMany(SensorList::class, 'sensor_token_id', "id");
     }
 }

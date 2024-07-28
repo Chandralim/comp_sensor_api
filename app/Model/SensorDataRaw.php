@@ -13,6 +13,9 @@ class SensorDataRaw extends Model
 
     public $timestamps = false;
 
+    protected $hidden = [
+        'sensor_list_id'
+    ];
     // protected $fillable = [
     //     'id', 'token', 'name',
     // ];

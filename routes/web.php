@@ -38,6 +38,8 @@ Route::middleware('auth:internal')->group(function () {
   // Route::get('/dashboard/detail', 'DashboardController@getDetail');
 
   Route::get('/dashboards/getSensorData', 'DashboardController@getSensorData');
+  Route::get('/dashboard/detail/period_data', 'DashboardController@detailPeriodData');
+  Route::get('/dashboard/detail/period_data/download', 'DashboardController@detailPeriodDataDownload');
 
   // Route::get('/dashboards/getAirLimbahSensorData', 'DashboardController@getAirLimbahSensorData');
   // Route::get('/dashboards/getAirLimbahCenterSensorData', 'DashboardController@getAirLimbahCenterSensorData');
