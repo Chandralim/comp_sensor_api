@@ -134,7 +134,9 @@ class SensorDataRawController extends Controller
             "sensor_list_id"  => $sl->id,
             "value"           => $value,
           ];
-          SensorDataRaw::insert($dt);
+
+          if (!SensorDataRaw::where("created_at", $utc_millis)->where("sensor_list_id", $sl->id)->where("value", $value)->first())
+            SensorDataRaw::insert($dt);
 
           $dt['sensor_token_id'] = $this->sensor->id;
           array_push($return, $dt);
