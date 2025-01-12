@@ -418,7 +418,14 @@ class DashboardController extends Controller
       $sensor_token_id = $request->sensor_token_id;
 
       $data = SensorToken::with(['sensor_lists' => function ($q) use ($utc_date_from, $utc_date_to) {
-        $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to) {
+
+        $q->with(['sensor_datas as first_sensor_data' => function ($q2) use ($utc_date_from) {
+          $q2->where('created_at', '<', $utc_date_from)
+            ->orderBy('created_at', 'desc')
+            ->limit(1); // Limit to 1 to get the first record
+        }]);
+
+        $q->with(['sensor_datas as filtered_sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to) {
           $q2->where('created_at', ">=", $utc_date_from)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
         }]);
       }])->find($sensor_token_id);
@@ -444,7 +451,7 @@ class DashboardController extends Controller
         array_push($myData, $md);
       }
 
-      $sensor_lists = $data->sensor_lists->toArray();
+      $sensor_lists = $data->sensor_lists[0]->filtered_sensor_datas->toArray();
       foreach ($sensor_lists as $k => $v) {
 
         $sensor_lists[$k]["sensor_postVal"] = [];
