@@ -465,10 +465,11 @@ class DashboardController extends Controller
             $result = $af[count($af) - 1]['value'];
             // $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
           } elseif ($v['type'] == 'ran') {
-            $result = array_reduce($af, function ($carry, $item) {
-              $carry += $item['value'];
-              return $carry;
-            }) / count($af);
+            $result = $af[count($af) - 1]['value'];
+            // $result = array_reduce($af, function ($carry, $item) {
+            //   $carry += $item['value'];
+            //   return $carry;
+            // }) / count($af);
           }
 
           array_push($sensor_lists[$k]["sensor_postVal"], $result);
