@@ -453,8 +453,6 @@ class DashboardController extends Controller
 
         foreach ($myData as $k1 => $v1) {
 
-          if ($k > $k1) break;
-
           $af = array_values(array_filter($v['sensor_datas'], function ($x) use ($v1, $d1millis) {
             return $x['created_at'] >= ($v1['utc_from'] - $d1millis) && $x['created_at'] < ($v1['utc_to'] - $d1millis);
           }));
