@@ -460,7 +460,8 @@ class DashboardController extends Controller
           } elseif (count($af) == 1 && $v['type'] == 'inc') {
           } elseif (count($af) == 1 && $v['type'] == 'ran') {
           } elseif ($v['type'] == 'inc') {
-            $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
+            $result = $af[0]['value'];
+            // $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
           } elseif ($v['type'] == 'ran') {
             $result = array_reduce($af, function ($carry, $item) {
               $carry += $item['value'];
