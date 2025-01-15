@@ -142,6 +142,7 @@ class SensorDataRawController extends Controller
               SensorDataRaw::insert($dt);
 
             $dt['sensor_token_id'] = $this->sensor->id;
+            $dt['sensor_list_name'] = $sl->name;
             array_push($return, $dt);
           }
         }

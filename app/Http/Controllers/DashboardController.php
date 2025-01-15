@@ -119,7 +119,7 @@ class DashboardController extends Controller
           "lists"               => []
         ];
 
-        $sensor_lists = SensorList::where("sensor_token_id", $v->id)->get();
+        $sensor_lists = SensorList::where("sensor_token_id", $v->id)->orderBy("id", "asc")->get();
         if (count($sensor_lists) > 0) {
           foreach ($sensor_lists as $k1 => $v1) {
             $dt2 = [
@@ -162,16 +162,68 @@ class DashboardController extends Controller
     return response()->json($data, 200);
   }
 
+  // public function detailPeriodData(Request $request)
+  // {
+
+  //   $this->admin = MyLib::admin();
+
+  //   $rules = [
+  //     '_TimeZoneOffset' => "required|numeric",
+  //     'date_from' => "required|date_format:Y-m-d",
+  //     'date_to' => "required|date_format:Y-m-d",
+  //     'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
+  //   ];
+
+  //   $messages = [
+  //     'date_from.required' => 'Period Start is required',
+  //     'date_from.date_format' => 'Please Select Period Start',
+
+  //     'date_to.required' => 'Period End is required',
+  //     'date_to.date_format' => 'Please Select Period End',
+  //   ];
+
+  //   $validator = \Validator::make($request->all(), $rules, $messages);
+
+  //   if ($validator->fails()) {
+  //     throw new ValidationException($validator);
+  //   }
+
+  //   $tz = $request->_TimeZoneOffset;
+
+  //   $date_from = $request->date_from;
+  //   $date_to = $request->date_to;
+
+  //   $date_from = $date_from . " 07:00:00";
+  //   $date_to = $date_to . " 07:00:00";
+
+  //   $mod_date_to = new \DateTime($date_to);
+  //   $mod_date_to->add(new \DateInterval('P1D'));
+
+  //   $utc_date_from = MyLib::local_to_utc($tz, $date_from);
+  //   $utc_date_to = MyLib::local_to_utc($tz, $mod_date_to->format("Y-m-d H:i:s"));
+
+  //   $sensor_token_id = $request->sensor_token_id;
+
+  //   $data = SensorToken::with(['sensor_lists' => function ($q) use ($utc_date_from, $utc_date_to) {
+  //     $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to) {
+  //       $q2->where('created_at', ">=", $utc_date_from)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
+  //     }]);
+  //   }])->find($sensor_token_id);
+
+
+  //   return response()->json(["data" => $data], 200);
+  // }
+
   public function detailPeriodData(Request $request)
   {
-
+    // dual mode
     $this->admin = MyLib::admin();
 
     $rules = [
       '_TimeZoneOffset' => "required|numeric",
       'date_from' => "required|date_format:Y-m-d",
       'date_to' => "required|date_format:Y-m-d",
-      'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
+      // 'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
     ];
 
     $messages = [
@@ -193,8 +245,8 @@ class DashboardController extends Controller
     $date_from = $request->date_from;
     $date_to = $request->date_to;
 
-    $date_from = $date_from . " 00:00:00";
-    $date_to = $date_to . " 00:00:00";
+    $date_from = $date_from . " 07:00:00";
+    $date_to = $date_to . " 07:00:00";
 
     $mod_date_to = new \DateTime($date_to);
     $mod_date_to->add(new \DateInterval('P1D'));
@@ -208,8 +260,7 @@ class DashboardController extends Controller
       $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to) {
         $q2->where('created_at', ">=", $utc_date_from)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
       }]);
-    }])->find($sensor_token_id);
-
+    }])->whereIn("id", [1, 2])->get();
 
     return response()->json(["data" => $data], 200);
   }
@@ -377,15 +428,187 @@ class DashboardController extends Controller
   //   // return $data;
   // }
 
+  // public function detailPeriodDataDownload(Request $request)
+  // {
+  //   try {
+  //     $this->admin = MyLib::admin();
+
+  //     $rules = [
+  //       '_TimeZoneOffset' => "required|numeric",
+  //       'periodic' => "required|date_format:Y-m-d",
+  //       'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
+  //     ];
+
+  //     $messages = [
+  //       'periodic.required' => 'Periodic is required',
+  //       'periodic.date_format' => 'Please Select Periodic',
+  //     ];
+
+  //     $validator = \Validator::make($request->all(), $rules, $messages);
+
+  //     if ($validator->fails()) {
+  //       throw new ValidationException($validator);
+  //     }
+
+  //     $tz = $request->_TimeZoneOffset;
+
+  //     $date_from = new \DateTime($request->periodic . "-01");
+
+  //     $date_to = clone ($date_from);
+  //     $date_to->add(new \DateInterval('P1D'));
+  //     $date_to = $date_to->format('Y-m-d');
+  //     $date_from = $date_from->format('Y-m-d');
+
+
+  //     $date_from = $date_from . " 00:00:00";
+  //     $date_to = $date_to . " 00:00:00";
+
+  //     $utc_date_from = MyLib::local_to_utc($tz, $date_from);
+  //     $utc_date_to = MyLib::local_to_utc($tz, $date_to);
+
+  //     $sensor_token_id = $request->sensor_token_id;
+
+  //     $d1millis = 1000 * 60 * 30;
+
+  //     $data = SensorToken::with(['sensor_lists' => function ($q) use ($utc_date_from, $utc_date_to, $d1millis) {
+  //       $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to, $d1millis) {
+  //         $q2->where('created_at', ">=", $utc_date_from - $d1millis)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
+  //       }]);
+  //     }])->find($sensor_token_id);
+
+  //     $info = [
+  //       "name" => $data->name,
+  //     ];
+
+  //     $myData = [];
+
+  //     $dDate = $date_from;
+  //     while ($dDate != $date_to) {
+  //       $md = [
+  //         "utc_from" => MyLib::local_to_utc($tz, $dDate),
+  //         "date_from" => $dDate,
+  //       ];
+
+  //       $dDate = new \DateTime($dDate);
+  //       $dDate->add(new \DateInterval('PT30M'));
+  //       $dDate = $dDate->format("Y-m-d H:i:s");
+
+  //       $md["utc_to"] = MyLib::local_to_utc($tz, $dDate);
+  //       array_push($myData, $md);
+  //     }
+
+  //     $sensor_lists = $data->sensor_lists->toArray();
+  //     foreach ($sensor_lists as $k => $v) {
+
+  //       $sensor_lists[$k]["sensor_postVal"] = [];
+
+  //       foreach ($myData as $k1 => $v1) {
+
+  //         $af = array_values(array_filter($v['sensor_datas'], function ($x) use ($v1, $d1millis) {
+  //           return $x['created_at'] >= ($v1['utc_from'] - $d1millis) && $x['created_at'] < ($v1['utc_to'] - $d1millis);
+  //         }));
+
+  //         MyLog::logging($af);
+
+  //         $result = 0;
+  //         if (count($af) == 0) {
+  //         } elseif (count($af) == 1 && $v['type'] == 'inc') {
+  //           $result = $af[0]['value'];
+  //         } elseif (count($af) == 1 && $v['type'] == 'ran') {
+  //           $result = $af[0]['value'];
+  //         } elseif ($v['type'] == 'inc') {
+  //           $result = $af[count($af) - 1]['value'];
+  //           // $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
+  //         } elseif ($v['type'] == 'ran') {
+  //           $result = $af[count($af) - 1]['value'];
+  //           // $result = array_reduce($af, function ($carry, $item) {
+  //           //   $carry += $item['value'];
+  //           //   return $carry;
+  //           // }) / count($af);
+  //         }
+
+  //         array_push($sensor_lists[$k]["sensor_postVal"], $result);
+  //       }
+  //     }
+
+
+
+
+  //     // $last_date = clone ($date_from);
+  //     // $last_date->modify('last day of this month');
+
+  //     // for ($i=1; $i < (int)$last_date->format("d") ; $i++) { 
+  //     //   array_push($myData,[
+  //     //     "date" => $date_from,
+  //     //   ]);
+  //     // }
+
+
+  //     // $date_to->modify('last day of this month');
+
+  //     // $data
+
+  //     // foreach ($data->sensor_lists as $key => $value) {
+  //     //   # code...
+  //     // }
+
+
+
+  //     // return response()->json(["data" => $data, "myData" => $myData, "sensor_lists" => $sensor_lists], 200);
+
+
+  //     // $ori = json_decode(json_encode($this->detailHistoryAirLimbah($request, true)), true)["original"];
+  //     // $data = $ori["data"];
+  //     // $additional = $ori["additional"];
+
+  //     $date = new \DateTime();
+  //     // $filename = $date->format("YmdHis") . "-" . $additional["company_name"] . "[" . $additional["date_from"] . "-" . $additional["date_to"] . "]";
+  //     $filename = $date->format("YmdHis") . "-" . $info["name"] . "[" . $request->periodic . "]";
+  //     // $filename=$date->format("YmdHis");
+
+  //     // return response()->json(["message"=>$filename],200);
+
+  //     // $mime = MyLib::mime("csv");
+  //     $mime = MyLib::mime("xls");
+
+  //     //     Excel::loadView('folder.file', $data)
+  //     // ->setTitle('FileName')
+  //     // ->sheet('SheetName')
+  //     // ->mergeCells('A2:B2')
+  //     // ->export('xls');
+
+  //     $bs64 = base64_encode(Excel::raw(new MyReport(["myData" => $myData, "sensor_lists" => $sensor_lists, "info" => $info], 'report.sensor_data'), $mime["exportType"]));
+
+  //     $result = [
+  //       "contentType" => $mime["contentType"],
+  //       "data" => $bs64,
+  //       "dataBase64" => $mime["dataBase64"] . $bs64,
+  //       "filename" => $filename . "." . $mime["ext"]
+  //     ];
+  //     return $result;
+  //   } catch (\Exception $e) {
+  //     return response()->json([
+  //       // "getCode" => $e->getCode(),
+  //       // "line" => $e->getLine(),
+  //       // "message" => $e->getMessage(),
+  //       "message" => "error",
+  //     ], 400);
+  //   }
+
+  //   // return response()->json(["data"=>$result],200);
+  //   // return $data;
+  // }
+
   public function detailPeriodDataDownload(Request $request)
   {
+    // dual mode
     try {
       $this->admin = MyLib::admin();
 
       $rules = [
         '_TimeZoneOffset' => "required|numeric",
         'periodic' => "required|date_format:Y-m-d",
-        'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
+        // 'sensor_token_id' => "required|exists:\App\Model\SensorToken,id",
       ];
 
       $messages = [
@@ -417,18 +640,8 @@ class DashboardController extends Controller
 
       $sensor_token_id = $request->sensor_token_id;
 
-      $d1millis = 1000 * 60 * 60;
 
-      $data = SensorToken::with(['sensor_lists' => function ($q) use ($utc_date_from, $utc_date_to, $d1millis) {
-        $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to, $d1millis) {
-          $q2->where('created_at', ">=", $utc_date_from - $d1millis)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
-        }]);
-      }])->find($sensor_token_id);
-
-      $info = [
-        "name" => $data->name,
-      ];
-
+      # code...
       $myData = [];
 
       $dDate = $date_from;
@@ -439,42 +652,59 @@ class DashboardController extends Controller
         ];
 
         $dDate = new \DateTime($dDate);
-        $dDate->add(new \DateInterval('PT1H'));
+        $dDate->add(new \DateInterval('PT30M'));
         $dDate = $dDate->format("Y-m-d H:i:s");
 
         $md["utc_to"] = MyLib::local_to_utc($tz, $dDate);
         array_push($myData, $md);
       }
 
-      $sensor_lists = $data->sensor_lists->toArray();
-      foreach ($sensor_lists as $k => $v) {
+      $d1millis = 1000 * 60 * 30;
 
-        $sensor_lists[$k]["sensor_postVal"] = [];
+      $datas = SensorToken::with(['sensor_lists' => function ($q) use ($utc_date_from, $utc_date_to, $d1millis) {
+        $q->with(['sensor_datas' => function ($q2) use ($utc_date_from, $utc_date_to, $d1millis) {
+          $q2->where('created_at', ">=", $utc_date_from - $d1millis)->where('created_at', "<", $utc_date_to)->orderBy("created_at", "asc");
+        }]);
+      }])->whereIn("id", [1, 2])->get();
 
-        foreach ($myData as $k1 => $v1) {
+      $output_data = [];
+      $info = [];
+      foreach ($datas as $kex => $data) {
+        array_push($info, strtoupper($data->name));
+        $sensor_lists = $data->sensor_lists->toArray();
+        array_push($output_data, $sensor_lists);
+        foreach ($output_data[$kex] as $k => $v) {
 
-          $af = array_values(array_filter($v['sensor_datas'], function ($x) use ($v1, $d1millis) {
-            return $x['created_at'] >= ($v1['utc_from'] - $d1millis) && $x['created_at'] < ($v1['utc_to'] - $d1millis);
-          }));
+          $output_data[$kex][$k]["sensor_postVal"] = [];
 
-          $result = 0;
-          if (count($af) == 0) {
-          } elseif (count($af) == 1 && $v['type'] == 'inc') {
-          } elseif (count($af) == 1 && $v['type'] == 'ran') {
-          } elseif ($v['type'] == 'inc') {
-            $result = $af[count($af) - 1]['value'];
-            // $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
-          } elseif ($v['type'] == 'ran') {
-            $result = $af[count($af) - 1]['value'];
-            // $result = array_reduce($af, function ($carry, $item) {
-            //   $carry += $item['value'];
-            //   return $carry;
-            // }) / count($af);
+          foreach ($myData as $k1 => $v1) {
+
+            $af = array_values(array_filter($v['sensor_datas'], function ($x) use ($v1, $d1millis) {
+              return $x['created_at'] >= ($v1['utc_from'] - $d1millis) && $x['created_at'] < ($v1['utc_to'] - $d1millis);
+            }));
+
+            $result = 0;
+            if (count($af) == 0) {
+            } elseif (count($af) == 1 && $v['type'] == 'inc') {
+              $result = $af[0]['value'];
+            } elseif (count($af) == 1 && $v['type'] == 'ran') {
+              $result = $af[0]['value'];
+            } elseif ($v['type'] == 'inc') {
+              $result = $af[count($af) - 1]['value'];
+              // $result = ($af[count($af) - 1]['value'] - $af[0]['value']) / 2;
+            } elseif ($v['type'] == 'ran') {
+              $result = $af[count($af) - 1]['value'];
+              // $result = array_reduce($af, function ($carry, $item) {
+              //   $carry += $item['value'];
+              //   return $carry;
+              // }) / count($af);
+            }
+
+            array_push($output_data[$kex][$k]["sensor_postVal"], $result);
           }
-
-          array_push($sensor_lists[$k]["sensor_postVal"], $result);
         }
       }
+
 
 
 
@@ -508,7 +738,7 @@ class DashboardController extends Controller
 
       $date = new \DateTime();
       // $filename = $date->format("YmdHis") . "-" . $additional["company_name"] . "[" . $additional["date_from"] . "-" . $additional["date_to"] . "]";
-      $filename = $date->format("YmdHis") . "-" . $info["name"] . "[" . $request->periodic . "]";
+      $filename = $date->format("YmdHis") . "-" . "[" . $request->periodic . "]";
       // $filename=$date->format("YmdHis");
 
       // return response()->json(["message"=>$filename],200);
@@ -522,7 +752,7 @@ class DashboardController extends Controller
       // ->mergeCells('A2:B2')
       // ->export('xls');
 
-      $bs64 = base64_encode(Excel::raw(new MyReport(["myData" => $myData, "sensor_lists" => $sensor_lists, "info" => $info], 'report.sensor_data'), $mime["exportType"]));
+      $bs64 = base64_encode(Excel::raw(new MyReport(["myData" => $myData, "sensor_lists" => $output_data, "info" => $info], 'report.sensor_data'), $mime["exportType"]));
 
       $result = [
         "contentType" => $mime["contentType"],

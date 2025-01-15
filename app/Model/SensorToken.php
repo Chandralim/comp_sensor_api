@@ -14,11 +14,14 @@ class SensorToken extends Model
     public $timestamps = false;
 
     protected $hidden = [
-        'token', 'admin_id', 'coor_lat', 'coor_long'
+        'token',
+        'admin_id',
+        'coor_lat',
+        'coor_long'
     ];
 
     public function sensor_lists()
     {
-        return $this->hasMany(SensorList::class, 'sensor_token_id', "id");
+        return $this->hasMany(SensorList::class, 'sensor_token_id', "id")->orderBy("id", "asc");
     }
 }
