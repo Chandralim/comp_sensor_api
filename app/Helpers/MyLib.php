@@ -93,22 +93,22 @@ class MyLib
   // }
 
 
-  // public static function millisToDateUTC($millis)
-  // {
-  //   // date local to utc millis
-  //   $date = date("Y-m-d H:i:s", $millis / 1000);
-  //   return $date;
-  //   // $date->sub(new \DateInterval('PT7H'));
-  //   // return round((float)($date->format("U").".".$date->format("v"))*1000);
-  // }
+  public static function millisToDateUTC($millis)
+  {
+    // date local to utc millis
+    $date = date("Y-m-d H:i:s", $millis / 1000);
+    return $date;
+    // $date->sub(new \DateInterval('PT7H'));
+    // return round((float)($date->format("U").".".$date->format("v"))*1000);
+  }
 
-  // public static function millisToDateLocal($millis)
-  // {
-  //   // date local to utc millis
-  //   $date = new \DateTime(self::millisToDateUTC($millis));
-  //   $date->add(new \DateInterval('PT7H'));
-  //   return $date->format('Y-m-d H:i:s');
-  // }
+  public static function millisToDateLocal($millis)
+  {
+    // date local to utc millis
+    $date = new \DateTime(self::millisToDateUTC($millis));
+    $date->add(new \DateInterval('PT7H'));
+    return $date->format('Y-m-d H:i:s');
+  }
 
   // public static function millisLocalToUTC($millis)
   // {

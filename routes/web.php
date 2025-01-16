@@ -29,6 +29,8 @@ Route::post('/admin/refresh', 'AdminAccount@refresh');
 
 Route::post('/send_sensor_data', 'IOT\SensorDataRawController@store');
 
+Route::post('/tarik-data', 'GetJSONController@store');
+
 // Route::prefix("/")->group(function () {
 Route::middleware('auth:internal')->group(function () {
   // Route::get('/dashboards', 'DashboardController@index');
