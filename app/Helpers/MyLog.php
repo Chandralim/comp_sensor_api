@@ -1,5 +1,5 @@
 <?php
-//app/Helpers/Envato/User.php
+
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,6 @@ class MyLog
     $timestamp = $date->format("Y-m-d H:i:s.v");
     $today = date("Y-m-d");
     $filename = "/logs/errors." . $today . ".log";
-    // $content="[".$timestamp."] ".json_encode($e,JSON_PRETTY_PRINT).PHP_EOL;
     $content = "[" . $timestamp . "] " . vsprintf("%s:%d %s (%d)\n", array($e->getFile(), $e->getLine(), $e->getMessage(), $e->getCode()));
     File::append(storage_path($filename), $content);
   }

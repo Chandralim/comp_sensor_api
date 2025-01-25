@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
@@ -18,20 +19,18 @@ class AdminAccount extends Controller
     $request['username'] = strtolower($request->username);
     $rules = [
       'username' => 'required',
-      // 'username' => 'required|exists:\App\Model\Admin,username',
-      'password'=>"required|min:8",
+      'password' => "required|min:8",
     ];
 
-    $messages=[
+    $messages = [
       'username.required' => 'Nama Pengguna tidak boleh kosong',
-      // 'username.exists' => 'Nama Pengguna tidak terdaftar',
 
       'password.required' => 'Kata Sandi tidak boleh kosong',
       'password.min' => 'Kata Sandi minimal 8 Karakter',
 
     ];
 
-    $validator = \Validator::make($request->all(),$rules,$messages);
+    $validator = \Validator::make($request->all(), $rules, $messages);
 
     if ($validator->fails()) {
       throw new ValidationException($validator);
@@ -40,61 +39,58 @@ class AdminAccount extends Controller
     $username = $request->username;
     $password = $request->password;
 
-    $admin = Admin::where("username",$username)->first();
-    if(!$admin){
+    $admin = Admin::where("username", $username)->first();
+    if (!$admin) {
       return response()->json([
-        "message"=>"Nama Pengguna dan Kata Sandi tidak cocok"
-      ],400);
+        "message" => "Nama Pengguna dan Kata Sandi tidak cocok"
+      ], 400);
     }
 
-    if (Hash::check($password,$admin->password)) {
+    if (Hash::check($password, $admin->password)) {
       $api_token = $admin->generateToken();
 
       return response()->json([
-        "status"=>200,
-        "message"=>"Berhasil login",
-        "token"=>$api_token
-      ],200);
-    }else {
+        "status" => 200,
+        "message" => "Berhasil login",
+        "token" => $api_token
+      ], 200);
+    } else {
       return response()->json([
-        "message"=>"Nama Pengguna dan Kata Sandi tidak cocok"
-      ],400);
+        "message" => "Nama Pengguna dan Kata Sandi tidak cocok"
+      ], 400);
     }
   }
 
   public function refresh(Request $request)
   {
-    // $this->admin = MyLib::admin();
-    
     try {
-      $token = json_decode(array_keys((array)$request->all())[0],true)["token"];
-      if ($token=="") {
-          return response()->json([
-            "status"=>400,
-            "message"=>"Token Tidak Ditemukan",
-          ],400);
+      $token = json_decode(array_keys((array)$request->all())[0], true)["token"];
+      if ($token == "") {
+        return response()->json([
+          "status" => 400,
+          "message" => "Token Tidak Ditemukan",
+        ], 400);
       }
 
-      $admin = Admin::where("api_token",$token)->first();
-      
+      $admin = Admin::where("api_token", $token)->first();
+
       if (!$admin) {
         return response()->json([
-          "message"=>"Maaf token tidak valid"
-        ],400);
+          "message" => "Maaf token tidak valid"
+        ], 400);
       }
 
       $api_token = $admin->generateToken();
 
       return response()->json([
-        "status"=>200,
-        "message"=>"Berhasil refresh token",
-        "token"=>$api_token
-      ],200);
-
+        "status" => 200,
+        "message" => "Berhasil refresh token",
+        "token" => $api_token
+      ], 200);
     } catch (\Exception $e) {
       return response()->json([
-        "message"=>"Maaf Server Sedang Di tindak lanjuti harap kembali lagi nanti"
-      ],500);
+        "message" => "Maaf Server Sedang Di tindak lanjuti harap kembali lagi nanti"
+      ], 500);
     }
   }
 
@@ -105,32 +101,31 @@ class AdminAccount extends Controller
 
     try {
       $token = $request->bearerToken();
-      if ($token=="") {
-          return response()->json([
-            "status"=>400,
-            "message"=>"Token Tidak Ditemukan",
-          ],400);
+      if ($token == "") {
+        return response()->json([
+          "status" => 400,
+          "message" => "Token Tidak Ditemukan",
+        ], 400);
       }
 
-      $admin = Admin::where("api_token",$token)->first();
+      $admin = Admin::where("api_token", $token)->first();
       if (!$admin) {
         return response()->json([
-          "message"=>"Maaf token tidak valid"
-        ],400);
+          "message" => "Maaf token tidak valid"
+        ], 400);
       }
 
-      $admin->api_token="";
+      $admin->api_token = "";
       $admin->save();
 
       return response()->json([
-        "status"=>200,
-        "message"=>"Logout Berhasil",
-      ],200);
-
+        "status" => 200,
+        "message" => "Logout Berhasil",
+      ], 200);
     } catch (\Exception $e) {
       return response()->json([
-        "message"=>"Maaf Server Sedang Di tindak lanjuti harap kembali lagi nanti"
-      ],500);
+        "message" => "Maaf Server Sedang Di tindak lanjuti harap kembali lagi nanti"
+      ], 500);
     }
   }
 
@@ -139,102 +134,104 @@ class AdminAccount extends Controller
     $this->admin = MyLib::admin();
 
     $token = $request->bearerToken();
-    if ($token=="") {
+    if ($token == "") {
       return response()->json([
-        "status"=>400,
-        "message"=>"Token Tidak Ditemukan",
-      ],400);
+        "status" => 400,
+        "message" => "Token Tidak Ditemukan",
+      ], 400);
     }
-    
-    $admin = Admin::where("api_token",$token)->first();
+
+    $admin = Admin::where("api_token", $token)->first();
     if (!$admin) {
       return response()->json([
-        "message"=>"Maaf token tidak valid"
-      ],400);
+        "message" => "Maaf token tidak valid"
+      ], 400);
     }
 
     return response()->json([
-      "status"=>200,
-      "message"=>"Tampilkan data user",
-      "user"=> [
-        "username"=>$admin->username,
-        "fullname"=>$admin->fullname,
-        "scope"=>[$admin->role],
+      "status" => 200,
+      "message" => "Tampilkan data user",
+      "user" => [
+        "username" => $admin->username,
+        "fullname" => $admin->fullname,
+        "scope" => [$admin->role],
       ]
-    ],200);
+    ], 200);
   }
 
 
-  public function change_password(Request $request){
+  public function change_password(Request $request)
+  {
     $this->admin = MyLib::admin();
 
     $rules = [
       'old_password' => 'required|min:8|max:255',
       'password' => 'required|confirmed|min:8|max:255',
-      'password_confirmation'=>'required|same:password|min:8|max:255',
+      'password_confirmation' => 'required|same:password|min:8|max:255',
     ];
 
-    $rule=[
-      "old_password.required"=>"Kata Sandi lama harus diisi",
-      "old_password.min"=>"Kata Sandi lama minimal 8 karakter",
-      "old_password.max"=>"Kata Sandi lama maksimal 255 karakter",
+    $rule = [
+      "old_password.required" => "Kata Sandi lama harus diisi",
+      "old_password.min" => "Kata Sandi lama minimal 8 karakter",
+      "old_password.max" => "Kata Sandi lama maksimal 255 karakter",
 
-      "password.required"=>"Kata Sandi Baru harus diisi",
-      "password.confirmed"=>"Kata Sandi Baru tidak cocok",
-      "password.min"=>"Kata Sandi Baru minimal 8 karakter",
-      "password.max"=>"Kata Sandi Baru maksimal 255 karakter",
+      "password.required" => "Kata Sandi Baru harus diisi",
+      "password.confirmed" => "Kata Sandi Baru tidak cocok",
+      "password.min" => "Kata Sandi Baru minimal 8 karakter",
+      "password.max" => "Kata Sandi Baru maksimal 255 karakter",
 
-      "password_confirmation.required"=>"Ulangi Kata Sandi Baru harus diisi",
-      "password_confirmation.same"=>"Ulangi Kata Sandi Baru tidak cocok",
-      "password_confirmation.min"=>"Ulangi Kata Sandi Baru minimal 8 karakter",
-      "password_confirmation.max"=>"Ulangi Kata Sandi Baru maksimal 255 karakter",
+      "password_confirmation.required" => "Ulangi Kata Sandi Baru harus diisi",
+      "password_confirmation.same" => "Ulangi Kata Sandi Baru tidak cocok",
+      "password_confirmation.min" => "Ulangi Kata Sandi Baru minimal 8 karakter",
+      "password_confirmation.max" => "Ulangi Kata Sandi Baru maksimal 255 karakter",
     ];
 
-    $validator = \Validator::make($request->all(),$rules,$rule);
+    $validator = \Validator::make($request->all(), $rules, $rule);
     if ($validator->fails()) {
       throw new ValidationException($validator);
     }
 
-    $profile = \App\Model\Admin::where("id",$this->admin->id)->first();
+    $profile = \App\Model\Admin::where("id", $this->admin->id)->first();
 
     $old_password = $request->old_password;
-    if(!Hash::check($old_password, $profile->password)) {
+    if (!Hash::check($old_password, $profile->password)) {
       return response()->json([
-        "message"=>"Kata sandi lama tidak sesuai"
-      ],400);
+        "message" => "Kata sandi lama tidak sesuai"
+      ], 400);
     }
 
-    $profile->password=bcrypt($request->password);
+    $profile->password = bcrypt($request->password);
     $profile->save();
 
     return response()->json([
-        "message"=>"Kata sandi berhasil diubah"
-    ],200);
+      "message" => "Kata sandi berhasil diubah"
+    ], 200);
   }
 
-  public function change_fullname(Request $request){
+  public function change_fullname(Request $request)
+  {
     $this->admin = MyLib::admin();
 
     $rules = [
       'fullname' => 'required|max:255',
     ];
 
-    $rule=[
+    $rule = [
       'fullname.required' => 'Nama Identitas tidak boleh kosong',
       'fullname.max' => 'Nama Identitas tidak boleh lebih dari 255 karakter',
     ];
 
-    $validator = \Validator::make($request->all(),$rules,$rule);
+    $validator = \Validator::make($request->all(), $rules, $rule);
     if ($validator->fails()) {
       throw new ValidationException($validator);
     }
 
-    $profile = \App\Model\Admin::where("id",$this->admin->id)->first();
-    $profile->fullname=$request->fullname;
+    $profile = \App\Model\Admin::where("id", $this->admin->id)->first();
+    $profile->fullname = $request->fullname;
     $profile->save();
 
     return response()->json([
-        "message"=>"Nama Identitas berhasil diubah"
-    ],200);
+      "message" => "Nama Identitas berhasil diubah"
+    ], 200);
   }
 }

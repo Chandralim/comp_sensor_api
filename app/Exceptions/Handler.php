@@ -64,10 +64,7 @@ class Handler extends ExceptionHandler
     $rendered = parent::render($request, $exception);
     $status_code = $rendered->getStatusCode();
 
-    // return parent::render($request, $exception);
-    // new line
     $debug = config('app.debug');
-    // $message = 'Maaf Server Sedang Di tindak lanjuti harap kembali lagi nanti';
     $message = '';
     // cek jika eksepsinya dikarenakan model tidak ditemukan
     if ($exception instanceof ModelNotFoundException) {
@@ -83,14 +80,6 @@ class Handler extends ExceptionHandler
     }
     // cek jika eksepsinya dikarenakan kegagalan validasi
     else if ($exception instanceof ValidationException) {
-      // $validationErrors = $exception->errors()->getMessages();
-      // // $validationErrors = $exception->validator->errors()->getMessages();
-      // $validationErrors = array_map(function($error) {
-      //   return array_map(function($message) {
-      //     return $message;
-      //   }, $error);
-      // }, $validationErrors);
-      // $message = $validationErrors;
       return response()->json($exception->errors(), $rendered->getStatusCode());
     }
     // cek jika eksepsinya dikarenakan kegagalan query
@@ -104,13 +93,6 @@ class Handler extends ExceptionHandler
       $status_code = $exception->getCode() == 0 ? 400 : $exception->getCode();
       return response()->json($exception->getData(), $status_code);
     }
-    // else if ($exception instanceof PostTooLargeException) {
-    //   $status_code = 413;
-    //   $message = 'File Too Large';
-    // }
-    // else if ($exception instanceof ParseError) {
-    //   // $message = "Maaf Server Sedang Di tindak lanjuti harap kembali lagi nanti";
-    // }
     if (empty($message)) {
       $message = $exception->getMessage();
     }
@@ -126,9 +108,6 @@ class Handler extends ExceptionHandler
       'data' => null,
       'errors' => $errors,
     ];
-
-    MyLog::logging($status_code, "exception");
-    MyLog::logging($return, "exception");
 
     return response()->json($return, $status_code);
   }

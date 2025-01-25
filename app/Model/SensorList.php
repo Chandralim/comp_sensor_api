@@ -13,18 +13,12 @@ class SensorList extends Model
 
     public $timestamps = false;
 
-    // protected $fillable = [
-    //     'id', 'token', 'name',
-    // ];
-
     protected $hidden = [
-        'sensor_token_id', 'uname', 'value_down_limit', 'value_top_limit'
+        'sensor_token_id',
+        'uname',
+        'value_down_limit',
+        'value_top_limit'
     ];
-
-    // public function location()
-    // {
-    //     return $this->hasOne(Location::class, 'id', "location_id");
-    // }
 
     public function sensor_datas()
     {

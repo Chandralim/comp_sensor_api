@@ -24,30 +24,5 @@ class MacroServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
-    {
-        if (env('APP_ENV') == 'local') {
-            Builder::macro('toBoundSql', function () {
-                /* @var Builder $this */
-                $bindings = array_map(
-                    fn ($parameter) => is_string($parameter) ? "'$parameter'" : $parameter,
-                    $this->getBindings()
-                );
-
-                return Str::replaceArray(
-                    '?',
-                    $bindings,
-                    $this->toSql()
-                );
-            });
-
-            EloquentBuilder::macro('toBoundSql', function () {
-                return $this->toBase()->toBoundSql();
-            });
-        } else {
-            EloquentBuilder::macro('toBoundSql', function () {
-                return $this;
-            });
-        }
-    }
+    public function boot() {}
 }

@@ -26,7 +26,6 @@ class MyReport implements FromView, ShouldAutoSize
 
     public function view(): View
     {
-        // return view( $this->report_view, [ 'data' => $this->data ]);
         return view($this->report_view, $this->data);
     }
 }

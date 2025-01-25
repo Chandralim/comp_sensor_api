@@ -76,7 +76,6 @@ class GetJSONController extends Controller
 
           foreach ($sl->sensor_datas as $k2 => $sds) {
             array_push($dt2, [
-              // "rawcreated_at" => $sds->created_at,
               "created_at" => MyLib::millisToDateLocal($sds->created_at),
               "value" => $sds->value
             ]);
@@ -98,11 +97,7 @@ class GetJSONController extends Controller
       }
 
       return response()->json(["data" => $data], 200);
-      // return response()->json(["data" => $sensors], 200);
     } catch (\Exception $e) {
-      // return response()->json([
-      //   "message" => $e->getMessage(),
-      // ], 400);
 
       if ($e->getCode() == 1) {
         return response()->json([

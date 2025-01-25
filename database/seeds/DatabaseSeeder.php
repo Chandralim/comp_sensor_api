@@ -9,10 +9,5 @@ class DatabaseSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
-    {
-        // $this->call(UserSeeder::class);
-        // $this->call(ProvincesTableSeeder::class);
-        $this->call(CitiesTableSeeder::class);
-    }
+    public function run() {}
 }

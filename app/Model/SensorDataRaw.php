@@ -16,12 +16,4 @@ class SensorDataRaw extends Model
     protected $hidden = [
         'sensor_list_id'
     ];
-    // protected $fillable = [
-    //     'id', 'token', 'name',
-    // ];
-
-    // public function location()
-    // {
-    //     return $this->hasOne(Location::class, 'id', "location_id");
-    // }
 }
